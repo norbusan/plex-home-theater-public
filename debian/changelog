@@ -1,0 +1,13 @@
+plexhometheater (1.2.3-0.2) unstable; urgency=medium
+
+  * add libcec-dev (>= 2.2.0) to build-deps and rebuild
+  * fix build-errors with newer libcec
+  * add configure target to debian/rules
+
+ -- Norbert Preining <preining@debian.org>  Thu, 20 Nov 2014 08:08:05 +0900
+
+plexhometheater (1.2.3-0.1) unstable; urgency=medium
+
+  * packaging for Debian
+
+ -- Norbert Preining <preining@debian.org>  Wed, 29 Oct 2014 07:40:30 +0900
