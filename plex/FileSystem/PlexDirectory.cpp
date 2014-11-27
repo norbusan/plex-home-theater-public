@@ -573,7 +573,6 @@ bool CPlexDirectory::ReadMediaContainer(XML_ELEMENT* root, CFileItemList& mediaC
 #ifndef USE_RAPIDXML
   if (root->ValueStr() != "MediaContainer" && root->ValueStr() != "ASContainer")
 #else
-  CLog::Log(LOGWARNING, "CPlexDirectory::ReadMediaContainer root name %s", root->name());
   if (CStdString(root->name()) != "MediaContainer" && CStdString(root->name()) != "ASContainer")
 #endif
   {
@@ -743,7 +742,7 @@ DIR_CACHE_TYPE CPlexDirectory::GetCacheType(const CStdString &strPath) const
 
   if (server && server->GetActiveConnection())
   {
-    if (server->GetActiveConnection()->IsLocal() || server->GetOwned())
+    if (server->GetActiveConnection()->IsLocal() || !server->IsShared())
       return DIR_CACHE_NEVER;
     else
     {

@@ -96,11 +96,14 @@ void CPlexServerDataLoader::OnJobComplete(unsigned int jobID, bool success, CJob
       sectionList->SetProperty("serverUUID", j->m_server->GetUUID());
       sectionList->SetProperty("serverName", j->m_server->GetName());
 
-      if (j->m_server->GetOwned() || j->m_server->GetHome())
+      if (!j->m_server->IsShared())
         m_sectionMap[j->m_server->GetUUID()] = sectionList;
       else
         m_sharedSectionsMap[j->m_server->GetUUID()] = sectionList;
     }
+    
+    if (j->m_playlistList)
+      m_serverHasPlaylist[j->m_server->GetUUID()] = (j->m_playlistList->Size() > 0);
 
     if (j->m_channelList)
     {
@@ -213,8 +216,10 @@ bool CPlexServerDataLoaderJob::DoWork()
     m_sectionList = FetchList("/library/sections");
     if (!m_sectionList)
       return false;
+    
+    m_playlistList = FetchList("/playlists");
 
-    if (m_server->GetOwned() && m_server->GetServerClass().empty())
+    if (!m_server->IsShared() && m_server->GetServerClass().empty())
     {
       loadPreferences();
       if (m_abort)
@@ -223,7 +228,7 @@ bool CPlexServerDataLoaderJob::DoWork()
       m_channelList = FetchList("/channels/all");
     }
   }
-  else
+  else if (!g_plexApplication.myPlexManager->GetCurrentUserInfo().restricted)
   {
     m_sectionList = CFileItemListPtr(new CFileItemList);
     CFileItemPtr myPlexSection = CFileItemPtr(new CFileItem("plexserver://myplex/pms/playlists"));
@@ -344,8 +349,8 @@ void CPlexServerDataLoader::OnTimeout()
     {
       if (m_forceRefresh ||
           (p.second->GetLastRefreshed() == 0 ||
-          ((p.second->GetOwned() && p.second->GetLastRefreshed() > OWNED_SERVER_REFRESH) ||
-          (!p.second->GetOwned() && p.second->GetLastRefreshed() > SHARED_SERVER_REFRESH))))
+          ((!p.second->IsShared() && p.second->GetLastRefreshed() > OWNED_SERVER_REFRESH) ||
+          (p.second->IsShared() && p.second->GetLastRefreshed() > SHARED_SERVER_REFRESH))))
       {
         CLog::Log(LOGDEBUG, "CPlexServerDataLoader::OnTimeout refreshing data for %s",
                   p.second->GetName().c_str());
