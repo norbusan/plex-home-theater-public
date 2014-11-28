@@ -29,7 +29,7 @@ configure-stamp:
 	mkdir -p WORK
 	cd WORK && \
 		CXXFLAGS="$(CXXFLAGS)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		cmake -GNinja -DCOMPRESS_TEXTURES=off -DCREATE_BUNDLE=off -DENABLE_DUMP_SYMBOLS=off -DENABLE_AUTOUPDATE=off  $(CURDIR)
+		cmake -GNinja -DCOMPRESS_TEXTURES=on -DCREATE_BUNDLE=off -DENABLE_DUMP_SYMBOLS=off -DENABLE_AUTOUPDATE=off  $(CURDIR)
 	touch $@
 
 clean:
@@ -55,6 +55,12 @@ install-stamp: build-stamp
 		$(pht)/usr/lib/PlexHomeTheater/addons/skin.plex/media
 	mkdir -p $(pht)/usr/bin
 	ln -s ../lib/PlexHomeTheater/plexhometheater $(pht)/usr/bin/plexhometheater
+	mkdir -p $(pht)/usr/share/applications
+	cp debian/plexhometheater.desktop $(pht)/usr/share/applications
+	mkdir -p $(pht)/usr/share/pixmaps
+	cp plex/Resources/plexhometheater.png $(pht)/usr/share/pixmaps
+	cp debian/plex-steamtile_460x215.png $(pht)/usr/share/pixmaps
+	# done
 	touch install-stamp
 
 binary-indep: install

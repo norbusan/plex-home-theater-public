@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Plex Home Theater
+GenericName=Plex Home Theater
+X-GNOME-FullName=Plex Home Theater
+Comment=Watch your media on the big screen
+Exec=plexhometheater
+Icon=plexhometheater
+Terminal=false
+Type=Application
