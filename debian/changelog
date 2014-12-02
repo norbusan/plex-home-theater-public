@@ -1,3 +1,9 @@
+plexhometheater (1.3.2-0.1) unstable; urgency=medium
+
+  * new release, hopefully fixes the connection problems
+
+ -- Norbert Preining <preining@debian.org>  Wed, 03 Dec 2014 08:56:09 +0900
+
 plexhometheater (1.3.1-0.1) unstable; urgency=medium
 
   * new release, include some work from Ubuntu packages
