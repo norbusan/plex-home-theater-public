@@ -518,6 +518,15 @@ void CCurlFile::SetCommonOptions(CReadState* state)
   // Another verb?
   if (m_verb.empty() == false)
     g_curlInterface.easy_setopt(h, CURLOPT_CUSTOMREQUEST, m_verb.c_str());
+  
+  /* With PLEX we actually ship a good CA store */
+  g_curlInterface.easy_setopt(h, CURLOPT_SSL_VERIFYPEER, 1);
+  g_curlInterface.easy_setopt(h, CURLOPT_SSL_VERIFYHOST, 1);
+  g_curlInterface.easy_setopt(h, CURLOPT_CAINFO, CSpecialProtocol::TranslatePath("special://xbmc/system/cacert.pem").c_str());
+
+  // If we are talking to plex.tv we use our own CA's certificate instead of the generic one.
+  if (boost::starts_with(m_url, "https://plex.tv"))
+    g_curlInterface.easy_setopt(h, CURLOPT_CAINFO, CSpecialProtocol::TranslatePath("special://xbmc/system/plexca.pem").c_str());
   /* END PLEX */
 
   // setup Referer header if needed
@@ -1403,7 +1412,7 @@ bool CCurlFile::CReadState::FillBuffer(unsigned int want)
 #ifndef __PLEX__
             CLog::Log(LOGWARNING, "%s: curl failed with code %i", __FUNCTION__, msg->data.result);
 #else
-            CLog::Log(LOGWARNING, "%s: curl [%s] failed with code %i", __FUNCTION__, m_url.c_str(), msg->data.result);
+            CLog::Log(LOGWARNING, "CCurlFile::FillBuffer [%s] failed: %s", m_url.c_str(), g_curlInterface.easy_strerror(msg->data.result));
 #endif
 
             // We need to check the result here as we don't want to retry on every error

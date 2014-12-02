@@ -261,6 +261,10 @@ bool CPlexTranscoderClient::ShouldTranscode(CPlexServerPtr server, const CFileIt
   else
     transcodeSetting = remoteBitrate();
   
+  // temporary force HEVC to transcode
+  if (item.GetProperty("mediatag-videocodec").asString() == "hevc")
+    return true;
+
   if (transcodeForced())
     return transcodeSetting != 0;
   else
@@ -342,6 +346,12 @@ CURL CPlexTranscoderClient::GetTranscodeURL(CPlexServerPtr server, const CFileIt
     tURL.SetOption("partIndex", mediaItem->m_selectedMediaPart->GetProperty("partIndex").asString());
   
   std::string bitrate = GetInstance()->GetCurrentBitrate(isLocal);
+
+  // if we have no bitrate setting and still want to transcode
+  // default to 20 mbps
+  if (bitrate == "0")
+    bitrate = "20000";
+
   tURL.SetOption("maxVideoBitrate", bitrate);
   tURL.SetOption("videoQuality", _qualities[bitrate]);
   tURL.SetOption("videoResolution", _resolutions[bitrate]);
@@ -373,6 +383,15 @@ CPlexTranscoderClient::PlexTranscodeMode CPlexTranscoderClient::getServerTransco
 {
   if (!server)
     return PLEX_TRANSCODE_MODE_NONE;
+  
+  // This is a ugly work-around, since OSX doesn't support transcoding in PHT
+  // we need to force the HLS mode, otherwise there can be certain codec
+  // combinations that will not work correctly. This should be removed
+  // when we merge with the next version of XBMC
+#ifdef TARGET_DARWIN_OSX
+  if (g_guiSettings.GetInt("audiooutput.mode") == AUDIO_IEC958)
+    return PLEX_TRANSCODE_MODE_HLS;
+#endif
 
   if (g_advancedSettings.m_bUseMatroskaTranscodes)
   {
