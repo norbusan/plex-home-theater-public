@@ -1,5 +1,10 @@
 #!/bin/sh
-export XBMC_HOME=/opt/plexhometheater/share/XBMC
+
+PHTROOT=/usr/lib/PlexHomeTheater
+
+XBMC_HOME=$PHTROOT/share/XBMC
+export XBMC_HOME
 #Use export AE_ENGINE=SOFT to disable pulse audio
 #export AE_ENGINE=SOFT
-/opt/plexhometheater/bin/plexhometheater
+$PHTROOT/bin/plexhometheater
+

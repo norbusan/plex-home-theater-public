@@ -47,14 +47,9 @@ install-stamp: build-stamp
 	dh_prep
 	dh_installdirs
 	cd WORK && cmake -DCMAKE_INSTALL_PREFIX=$(pht)/usr/lib/PlexHomeTheater -P cmake_install.cmake
-	mv $(pht)/usr/lib/PlexHomeTheater/share/XBMC/* $(pht)/usr/lib/PlexHomeTheater
-	rm -rf $(pht)/usr/lib/PlexHomeTheater/share
-	cp -a $(pht)/usr/lib/PlexHomeTheater/bin/* $(pht)/usr/lib/PlexHomeTheater/
-	rm -rf $(pht)/usr/lib/PlexHomeTheater/bin
-	mv $(pht)/usr/lib/PlexHomeTheater/addons/skin.plex/Media \
-		$(pht)/usr/lib/PlexHomeTheater/addons/skin.plex/media
 	mkdir -p $(pht)/usr/bin
-	ln -s ../lib/PlexHomeTheater/plexhometheater $(pht)/usr/bin/plexhometheater
+	cp debian/plexhometheater.sh $(pht)/usr/bin/plexhometheater
+	chmod 0644 $(pht)/usr/bin/plexhometheater
 	mkdir -p $(pht)/usr/share/applications
 	cp debian/plexhometheater.desktop $(pht)/usr/share/applications
 	mkdir -p $(pht)/usr/share/pixmaps
