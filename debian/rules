@@ -3,14 +3,19 @@
 #export DH_VERBOSE=1
 export DH_OPTIONS
 
+export 
 PACKAGE := plexhometheater
 pht := $(CURDIR)/debian/$(PACKAGE)
 libpht := /usr/lib/PlexHomeTheater
 
+
+
 CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
 CFLAGS:=$(shell dpkg-buildflags --get CFLAGS)
 CXXFLAGS:=$(shell dpkg-buildflags --get CXXFLAGS)
-LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
+#LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
+
+unexport LDFLAGS
 
 CFLAGS += -g -Wall
 
@@ -29,8 +34,8 @@ configure-stamp:
 	dh_testdir
 	mkdir -p WORK
 	cd WORK && \
-		CXXFLAGS="$(CXXFLAGS)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		cmake -GNinja -DENABLE_UBUNTU_FFMPEG_HACK=on -DCOMPRESS_TEXTURES=on -DCMAKE_BUILD_TYPE=Debug -DENABLE_DVD_DRIVE=off -DCREATE_BUNDLE=off -DENABLE_DUMP_SYMBOLS=off -DENABLE_AUTOUPDATE=off -DCMAKE_INSTALL_PREFIX=$(libpht)  $(CURDIR)
+		CXXFLAGS="$(CXXFLAGS)" CFLAGS="$(CFLAGS)" \
+		cmake -GNinja -DENABLE_UBUNTU_FFMPEG_HACK=on -DCOMPRESS_TEXTURES=on -DCMAKE_BUILD_TYPE=Debug -DENABLE_DVD_DRIVE=off -DENABLE_AUTOUPDATE=off -DCMAKE_INSTALL_PREFIX=$(libpht)  $(CURDIR)
 	touch $@
 
 clean:
@@ -61,6 +66,8 @@ install-stamp: build-stamp
 
 binary-indep: install
 
+export LD_LIBRARY_PATH := debian/$(PACKAGE)/$(libpht)/bin/system/players/dvdplayer:$(LD_LIBRARY_PATH)
+
 binary-arch: DH_OPTIONS=-a
 binary-arch: install
 	dh_testdir
@@ -73,7 +80,8 @@ endif
 	dh_compress
 	dh_fixperms
 	dh_installdeb
-	dh_shlibdeps -X avformat -X avfilter -X postproc -X swresample -X avcodec -X swscale 
+	#dh_shlibdeps -X avformat -X avfilter -X postproc -X swresample -X avcodec -X swscale 
+	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
