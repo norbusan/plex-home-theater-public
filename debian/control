@@ -1,13 +1,80 @@
 Source: plexhometheater
-Section: video
+Section: universe/video
 Priority: optional
-Maintainer: Norbert Preining <preining@debian.org>
-Build-Depends: libiso9660-dev, libcdio-dev, libmodplug-dev, yasm, libvdpau-dev, libva-dev, libshairport-dev, libplist-dev, librtmp-dev, libass-dev, libmpeg2-4-dev, libcurl4-gnutls-dev, libflac++-dev, libglew-dev, libtinyxml-dev, libmicrohttpd-dev, libyajl-dev, libsamplerate0-dev, libfribidi-dev, liblzo2-dev, libsdl-mixer1.2-dev, libsdl-image1.2-dev, libsdl1.2-dev, libusb-dev, libudev-dev, ninja-build, debhelper, cmake, libsqlite3-dev, libssl-dev, libxrandr-dev, libavutil-dev, libboost-thread-dev, libboost-system-dev, libmp3lame-dev, libcec-dev (>= 2.2.0), curl, libasound2-dev | libasound-dev, libavahi-client-dev, libavahi-common-dev, libboost-dev, libbz2-dev, libdbus-1-dev, libenca-dev, libflac-dev, libfontconfig-dev, libfreetype6-dev, libgl1-mesa-dev | libgl-dev, libglu1-mesa-dev | libglu-dev, libjasper-dev, libjpeg-dev, libmad0-dev, libogg-dev, libpcre3-dev, libpng12-dev | libpng-dev, libpulse-dev, libsmbclient-dev, libtiff5-dev | libtiff4-dev | libtiff-dev, libvorbis-dev, libxmu-dev, libxt-dev, unzip, zip, zlib1g-dev
-Standards-Version: 3.9.6
-Homepage: http://plex.tv/
-
+Maintainer: Plex Inc <linux@plexapp.com>
+Build-Depends: cmake (>= 2.8.8), debhelper (>= 9),
+ cdbs,
+ unzip,
+ libboost-dev,
+ zip,
+ libgles2-mesa-dev [armel] | libgl1-mesa-dev | libgl-dev,
+ libglu1-mesa-dev | libglu-dev,
+ libglew-dev,
+ libmad0-dev,
+ libjpeg-dev,
+ libsamplerate-dev,
+ libogg-dev,
+ libvorbis-dev,
+ libfreetype6-dev,
+ libfontconfig-dev,
+ libbz2-dev,
+ libfribidi-dev,
+ libsqlite3-dev,
+ libasound2-dev | libasound-dev,
+ libpng12-dev | libpng-dev,
+ libpcre3-dev,
+ liblzo2-dev,
+ libcdio-dev,
+ libsdl-dev,
+ libsdl-image1.2-dev,
+ libsdl-mixer1.2-dev,
+ libenca-dev,
+ libjasper-dev,
+ libxt-dev,
+ libxmu-dev,
+ libcurl4-gnutls-dev | libcurl-dev,
+ libdbus-1-dev,
+ libpulse-dev,
+ libavahi-common-dev,
+ libavahi-client-dev,
+ libxrandr-dev,
+ libmpeg2-4-dev,
+ libass-dev (>= 0.9.8),
+ libflac++-dev,
+ libflac-dev,
+ zlib1g-dev,
+ libsmbclient-dev,
+ libiso9660-dev,
+ libssl-dev,
+ libvdpau-dev,
+ libmicrohttpd-dev,
+ libmodplug-dev,
+ librtmp-dev,
+ curl,
+ libyajl-dev,
+ libboost-thread-dev,
+ libboost-system-dev,
+ libomxil-bellagio-dev [armel],
+ libplist-dev,
+ libcec-dev (>= 2.1),
+ libudev-dev,
+ libshairport-dev,
+ libtiff5-dev | libtiff4-dev | libtiff-dev,
+ libtinyxml-dev (>= 2.6.2),
+ libmp3lame-dev,
+ libva-dev,
+ yasm 
+# libavcodec-dev (>= 0.10),
+# libavfilter-dev (>= 0.10),
+# libavformat-dev (>= 0.10),
+# libavutil-dev (>= 0.10),
+# libpostproc-dev (>= 0.10),
+# libswscale-dev (>= 0.10),
+# libswresample-dev (>= 0.10),
+# libavdevice-dev (>= 0.10)
+ 
 Package: plexhometheater
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libshairport2, libcec (>= 2.1) | libcec2, libplist2
+Depends: ${misc:Depends}, ${shlibs:Depends}, libshairport1 | libshairport2, libcec (>= 2.1) | libcec2, libplist1 | libplist2
 Description: The most awesome Media Center you'll ever need.
- Home Theater client for the Plex server.
+  Find more info at http://plexapp.com/
