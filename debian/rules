@@ -5,6 +5,7 @@ export DH_OPTIONS
 
 PACKAGE := plexhometheater
 pht := $(CURDIR)/debian/$(PACKAGE)
+libpht := /usr/lib/PlexHomeTheater
 
 CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
 CFLAGS:=$(shell dpkg-buildflags --get CFLAGS)
@@ -29,7 +30,7 @@ configure-stamp:
 	mkdir -p WORK
 	cd WORK && \
 		CXXFLAGS="$(CXXFLAGS)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		cmake -GNinja -DCOMPRESS_TEXTURES=off -DCREATE_BUNDLE=off -DENABLE_DUMP_SYMBOLS=off -DENABLE_AUTOUPDATE=off  $(CURDIR)
+		cmake -GNinja -DCOMPRESS_TEXTURES=on -DCMAKE_BUILD_TYPE=Debug -DENABLE_DVD_DRIVE=off -DCREATE_BUNDLE=off -DENABLE_DUMP_SYMBOLS=off -DENABLE_AUTOUPDATE=off -DCMAKE_INSTALL_PREFIX=$(libpht)  $(CURDIR)
 	touch $@
 
 clean:
@@ -46,7 +47,7 @@ install-stamp: build-stamp
 	dh_testroot
 	dh_prep
 	dh_installdirs
-	cd WORK && cmake -DCMAKE_INSTALL_PREFIX=$(pht)/usr/lib/PlexHomeTheater -P cmake_install.cmake
+	cd WORK && cmake -DCMAKE_INSTALL_PREFIX=$(pht)/$(libpht) -P cmake_install.cmake
 	mkdir -p $(pht)/usr/bin
 	cp debian/plexhometheater.sh $(pht)/usr/bin/plexhometheater
 	chmod 0644 $(pht)/usr/bin/plexhometheater
