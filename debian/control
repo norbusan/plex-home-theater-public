@@ -1,8 +1,11 @@
 Source: plexhometheater
-Section: universe/video
+Section: video
 Priority: optional
-Maintainer: Plex Inc <linux@plexapp.com>
+Maintainer: Norbert Preining <preining@debian.org>
+Homepage: http://plex.tv/
+Standards-Version: 3.9.6
 Build-Depends: cmake (>= 2.8.8), debhelper (>= 9),
+ dh-exec,
  cdbs,
  unzip,
  libboost-dev,

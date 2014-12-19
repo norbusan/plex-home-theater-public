@@ -10,3 +10,10 @@ DEB_CMAKE_NORMAL_ARGS += -DENABLE_AUTOUPDATE=off -DCMAKE_BUILD_TYPE=Debug -DENAB
 
 export LD_LIBRARY_PATH := debian/plexhometheater/usr/lib/plexhometheater/bin/system/players/dvdplayer:$(LD_LIBRARY_PATH) dh_shlibdeps
 unexport LDFLAGS
+
+# fix installation of plex
+install/plexhometheater::
+	mkdir -p debian/plexhometheater/usr/bin
+	cp debian/plexhometheater.sh debian/plexhometheater/usr/bin/plexhometheater
+	chmod 0755 debian/plexhometheater/usr/bin/plexhometheater
+

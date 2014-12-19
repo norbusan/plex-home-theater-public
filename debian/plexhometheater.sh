@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PHTROOT=/usr/lib/PlexHomeTheater
+PHTROOT=/usr/lib/plexhometheater
 
 XBMC_HOME=$PHTROOT/share/XBMC
 export XBMC_HOME
