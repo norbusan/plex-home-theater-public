@@ -48,6 +48,7 @@
 #include "AdvancedSettings.h"
 #include "PlexDirectoryCache.h"
 #include "Client/PlexServerVersion.h"
+#include "StringUtils.h"
 
 
 using namespace XFILE;
@@ -146,14 +147,20 @@ bool CPlexDirectory::GetDirectory(const CURL& url, CFileItemList& fileItems)
     return GetPlaylistsDirectory(fileItems, url.GetOptions());
   }
 
-  if (boost::starts_with(m_url.GetFileName(), "library/metadata") && !boost::ends_with(m_url.GetFileName(), "children") && !boost::ends_with(m_url.GetFileName(), "extras"))
+  if (boost::starts_with(m_url.GetFileName(), "library/metadata") &&
+      !boost::ends_with(m_url.GetFileName(), "children") &&
+      !boost::ends_with(m_url.GetFileName(), "extras"))
+  {
+    m_file.SetTimeout(60);
     m_url.SetOption("checkFiles", "1");
+  }
 
   if (m_url.HasProtocolOption("containerSize"))
   {
     m_url.SetOption("X-Plex-Container-Size", m_url.GetProtocolOption("containerSize"));
     m_url.RemoveProtocolOption("containerSize");
   }
+
   if (m_url.HasProtocolOption("containerStart"))
   {
     m_url.SetOption("X-Plex-Container-Start", m_url.GetProtocolOption("containerStart"));
@@ -617,18 +624,35 @@ bool CPlexDirectory::ReadMediaContainer(XML_ELEMENT* root, CFileItemList& mediaC
       key.erase(c, key.size());
 
     if (boost::ends_with(key, "/allLeaves") && mediaContainer.Size() > 1)
+    {
       mediaContainer.SetPlexDirectoryType(mediaContainer.Get(1)->GetPlexDirectoryType());
-    /* See https://github.com/plexinc/plex/issues/737 for a discussion around this workaround */
+    }
     else if (boost::starts_with(m_url.GetFileName(), "library/sections/") &&
              mediaContainer.Size() > 0 &&
              mediaContainer.Get(0)->GetPlexDirectoryType() == PLEX_DIR_TYPE_PHOTOALBUM)
+    {
+      /* See https://github.com/plexinc/plex/issues/737 for a discussion around this workaround */
       mediaContainer.SetPlexDirectoryType(PLEX_DIR_TYPE_PHOTO);
+    }
     else if (boost::starts_with(m_url.GetFileName(), "library/metadata/") &&
              mediaContainer.Size() > 0 &&
              mediaContainer.Get(0)->GetPlexDirectoryType() == PLEX_DIR_TYPE_PHOTO)
+    {
       mediaContainer.SetPlexDirectoryType(PLEX_DIR_TYPE_PHOTOALBUM);
+    }
+    else if (boost::starts_with(m_url.GetFileName(), "playlists/"))
+    {
+      std::vector<std::string> arr = StringUtils::Split(m_url.GetFileName(), "/");
+      if (arr.size() > 1)
+      {
+        mediaContainer.SetProperty("playlistID", arr[1]);
+        mediaContainer.SetPlexDirectoryType(mediaContainer.Get(0)->GetPlexDirectoryType());
+      }
+    }
     else
+    {
       mediaContainer.SetPlexDirectoryType(mediaContainer.Get(0)->GetPlexDirectoryType());
+    }
   }
   
   /* we need to massage channels a tiny wee bit */
