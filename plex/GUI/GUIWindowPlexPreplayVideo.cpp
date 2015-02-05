@@ -102,6 +102,10 @@ bool CGUIWindowPlexPreplayVideo::OnMessage(CGUIMessage &message)
   {
     m_focusSaver.SaveFocus(this);
   }
+  else if (message.GetMessage() == GUI_MSG_UPDATE)
+  {
+     Refresh(false);
+  }
 
   return ret;
 }
@@ -122,6 +126,7 @@ bool CGUIWindowPlexPreplayVideo::OnAction(const CAction &action)
       m_vecItems->Get(0)->MarkAsUnWatched();
     else
       m_vecItems->Get(0)->MarkAsWatched();
+    SetInvalid();
     return true;
   }
   else if (action.GetID() == ACTION_MARK_AS_UNWATCHED)
@@ -294,11 +299,18 @@ bool CGUIWindowPlexPreplayVideo::OnBack(int actionID)
   return true;
 }
 
-///////////////////////////////////the////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 bool CGUIWindowPlexPreplayVideo::Update(const CStdString &strDirectory, bool updateFilterPath)
 {
   bool ret = CGUIMediaWindow::Update(strDirectory, updateFilterPath);
 
+  CURL currentURL(strDirectory);
+  if (!currentURL.HasOption("checkfiles"))
+  {
+    currentURL.SetOption("checkFiles", "1");
+    CPlexDirectoryFetchJob *job = new CPlexDirectoryFetchJob(currentURL, CPlexDirectoryCache::CACHE_STRATEGY_ALWAYS);
+    CJobManager::GetInstance().AddJob(job, this);
+  }
   if (ret)
     UpdateItem();
 
@@ -337,6 +349,13 @@ void CGUIWindowPlexPreplayVideo::OnJobComplete(unsigned int jobID, bool success,
       m_friends.Copy(fjob->m_items);
     else if (fjob->m_url.GetFileName() == "pms/social/networks.xml")
       m_networks.Copy(fjob->m_items);
+
+    if (fjob->m_url.HasOption("checkFiles"))
+    {
+      m_vecItems->SetPath(fjob->m_url.Get());
+      CGUIMessage msg(GUI_MSG_UPDATE, WINDOW_PLEX_PREPLAY_VIDEO, g_windowManager.GetActiveWindow(), 0, 0);
+      g_windowManager.SendThreadMessage(msg, WINDOW_PLEX_PREPLAY_VIDEO);
+    }
   }
 }
 

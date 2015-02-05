@@ -37,7 +37,7 @@ CGUIPlexDefaultActionHandler::CGUIPlexDefaultActionHandler()
   m_ActionSettings.push_back(*action);
   
   action = new ACTION_SETTING(ACTION_PLEX_SHUFFLE_ALL);
-  action->WindowSettings[WINDOW_VIDEO_NAV].contextMenuVisisble = true;
+  action->WindowSettings[WINDOW_VIDEO_NAV].contextMenuVisisble = false;
   m_ActionSettings.push_back(*action);
 
   action = new ACTION_SETTING(ACTION_PLEX_NOW_PLAYING);
@@ -290,8 +290,7 @@ bool CGUIPlexDefaultActionHandler::OnAction(int windowID, CAction action, CFileI
             CFileItemPtr plItem =  plDialog->GetSelectedItem();
             if (plItem)
             {
-              CStdString playlistID = plItem->GetProperty("unprocessed_ratingkey").asString();
-              
+              CStdString playlistID = plItem->GetProperty("ratingkey").asString();
               
               if (server)
               {
@@ -408,7 +407,7 @@ void CGUIPlexDefaultActionHandler::GetContextButtonsForAction(int actionID, CFil
       {
         CStdString viewOffset = item->GetProperty("viewOffset").asString();
         
-        if (item->GetVideoInfoTag()->m_playCount > 0 || viewOffset.size() > 0)
+        if (item->GetVideoInfoTag()->m_playCount > 0 && viewOffset.size() == 0)
           buttons.Add(actionID, 16104);
       }
       break;
@@ -583,6 +582,9 @@ std::string CGUIPlexDefaultActionHandler::GetFilteredURI(const CFileItem& item) 
     itemUrl.SetFileName(fname);
   }
 
+  itemUrl.RemoveOption("X-Plex-Container-Start");
+  itemUrl.RemoveOption("X-Plex-Container-Size");
+
   // set sourceType
   if (item.m_bIsFolder)
   {
@@ -590,7 +592,7 @@ std::string CGUIPlexDefaultActionHandler::GetFilteredURI(const CFileItem& item) 
     itemUrl.SetOption("sourceType", sourceType);
   }
 
-  return CPlexPlayQueueManager::getURIFromItem(item,itemUrl.GetUrlWithoutOptions().substr(17, std::string::npos));
+  return CPlexPlayQueueManager::getURIFromItem(item,itemUrl.Get().substr(17, std::string::npos));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -94,6 +94,7 @@
 #include "git_revision.h"
 #include "GUI/GUIPlexMediaWindow.h"
 #include "Playlists/PlexPlayQueueManager.h"
+#include "GUI/GUIDialogPlexUserSelect.h"
 
 using namespace PLAYLIST;
 /* END PLEX */
@@ -2037,7 +2038,9 @@ CStdString CGUIInfoManager::GetLabel(int info, int contextWindow, CStdString *fa
     return ret;
   }
   case SYSTEM_CURRENT_USER:
-    strLabel = g_plexApplication.myPlexManager->GetCurrentUserInfo().username;
+    {
+      strLabel = g_plexApplication.myPlexManager->GetCurrentUserInfo().username;
+    }
     break;
   case SYSTEM_CURRENT_USER_THUMB:
     strLabel = g_plexApplication.myPlexManager->GetCurrentUserInfo().thumb;

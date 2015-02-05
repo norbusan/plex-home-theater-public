@@ -553,7 +553,9 @@ bool CGUIPlexMediaWindow::OnAction(const CAction &action)
 #ifdef USE_PAGING
   if ((action.GetID() > ACTION_NONE &&
       action.GetID() <= ACTION_PAGE_DOWN) ||
-      action.GetID() >= KEY_ASCII) // KEY_ASCII means that we letterjumped.
+      action.GetID() >= KEY_ASCII || // KEY_ASCII means that we letterjumped.
+      action.GetID() == ACTION_MOUSE_WHEEL_UP ||
+      action.GetID() == ACTION_MOUSE_WHEEL_DOWN)
   {
     FetchItemPage(m_viewControl.GetSelectedItem());
   }
@@ -628,7 +630,9 @@ bool CGUIPlexMediaWindow::GetDirectory(const CStdString &strDirectory, CFileItem
       {
         /* we need the first characters, this is blocking this thread, which is not optimal :( */
         u.SetProtocolOptions("");
-        
+        u.RemoveOption("X-Plex-Container-Start");
+        u.RemoveOption("X-Plex-Container-Size");
+
         /* cut off the all in the end */
         u.SetFileName(u.GetFileName().substr(0, u.GetFileName().size()-3));
         
@@ -904,6 +908,13 @@ bool CGUIPlexMediaWindow::Update(const CStdString &strDirectory, bool updateFilt
   if (RestoreSelection())
   {
     FetchItemPage(m_viewControl.GetSelectedItem());
+  }
+
+  // if the update failed we want to get back up
+  if (!ret)
+  {
+    CLog::Log(LOGDEBUG, "Update failed, going to previous window.");
+    g_windowManager.PreviousWindow();
   }
 
   return ret;

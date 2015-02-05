@@ -753,6 +753,10 @@ msgctxt "#43009"
 msgid "20 Mbps"
 msgstr "20 Mbps"
 
+msgctxt "#43010"
+msgid "Maximum"
+msgstr "Maximum"
+
 msgctxt "#44000"
 msgid "Email"
 msgstr "Email"
@@ -1131,3 +1135,15 @@ msgstr "Queueing and recommending video, Sharing your media"
 msgctxt "#52623"
 msgid "Subtitle offset"
 msgstr "Subtitle offset"
+
+msgctxt "#52630"
+msgid "Please try again"
+msgstr "Please try again"
+
+msgctxt "#52631"
+msgid "Please sign in again"
+msgstr "Please sign in again"
+
+msgctxt "#52632"
+msgid "Your credentials have expired. Please sign in again."
+msgstr "Your credentials have expired. Please sign in again."

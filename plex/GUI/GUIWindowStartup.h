@@ -20,14 +20,42 @@
  *
  */
 
-#include "guilib/GUIWindow.h"
+#include "FileItem.h"
+#include "GUIViewControl.h"
+#include "JobManager.h"
+#include "video/windows/GUIWindowVideoNav.h"
 
 class CGUIWindowStartup :
-      public CGUIWindow
+      public CGUIMediaWindow, public IJobCallback, public IPlexGlobalTimeout
 {
 public:
   CGUIWindowStartup(void);
   virtual ~CGUIWindowStartup(void);
+
   virtual bool OnAction(const CAction &action);
   virtual void OnWindowLoaded();
+  virtual bool OnMessage(CGUIMessage &message);
+  void OnNumber(unsigned int num);
+  void OnBackSpace();
+  void PreviousWindow();
+  inline void allowEscOut(bool allow) { m_allowEscOut = allow; }
+
+private:
+  void SelectUserByName(CStdString user);
+  void OnUserSelected(CFileItemPtr item);
+  void setPinControlText(CStdString pin);
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job);
+  void setUsersList(CFileItemList &userlist);
+  void OnTimeout();
+  void notifyLoginFailed();
+
+  CFileItemList m_users;
+  CStdString m_pin;
+  CStdString m_selectedUser;
+  CStdString m_selectedUserThumb;
+  bool m_allowEscOut;
+  CStdString m_currentToken;
+  int m_fetchUsersJobID;
+
+  CGUIViewControl m_viewControl;
 };

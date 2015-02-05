@@ -6,6 +6,7 @@
 #include "threads/SingleLock.h"
 #include "PlexConnection.h"
 #include "Utility/PlexTimer.h"
+#include "PlexTranscoderClient.h"
 
 #include <boost/foreach.hpp>
 #include <boost/timer.hpp>
@@ -112,6 +113,9 @@ bool CPlexServer::CollectDataFromRoot(const CStdString xmlData)
 
     if (root->QueryStringAttribute("transcoderVideoBitrates", &stringValue) == TIXML_SUCCESS)
       m_transcoderBitrates = StringUtils::Split(stringValue, ",");
+
+    // we Add a max value to the transcoder provided ones
+    m_transcoderBitrates.push_back(PLEX_TRANSCODER_MAX_BITRATE_STR);
 
     if (root->QueryStringAttribute("transcoderVideoQualities", &stringValue) == TIXML_SUCCESS)
       m_transcoderQualities = StringUtils::Split(stringValue, ",");
@@ -441,15 +445,13 @@ CURL CPlexServer::BuildURL(const CStdString &path, const CStdString &options) co
     CStdString token;
     BOOST_FOREACH(CPlexConnectionPtr conn, m_connections)
     {
-      if (!conn->GetAccessToken().empty())
+      if (!conn->GetAccessToken().IsEmpty())
       {
         token = conn->GetAccessToken();
+        url.SetOption(connection->GetAccessTokenParameter(), token);
         break;
       }
     }
-
-    if (!token.empty())
-      url.SetOption(connection->GetAccessTokenParameter(), token);
   }
   return url;
 }
@@ -459,7 +461,7 @@ bool CPlexServer::HasAuthToken() const
 {
   BOOST_FOREACH(CPlexConnectionPtr conn, m_connections)
   {
-    if (!conn->GetAccessToken().empty())
+    if (!conn->GetAccessToken().IsEmpty())
       return true;
   }
   return false;
@@ -470,7 +472,7 @@ string CPlexServer::GetAnyToken() const
 {
   BOOST_FOREACH(CPlexConnectionPtr conn, m_connections)
   {
-    if (!conn->GetAccessToken().empty())
+    if (!conn->GetAccessToken().IsEmpty())
       return conn->GetAccessToken();
   }
   return string();

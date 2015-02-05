@@ -525,7 +525,7 @@ void CCurlFile::SetCommonOptions(CReadState* state)
   g_curlInterface.easy_setopt(h, CURLOPT_CAINFO, CSpecialProtocol::TranslatePath("special://xbmc/system/cacert.pem").c_str());
 
   // If we are talking to plex.tv we use our own CA's certificate instead of the generic one.
-  if (boost::starts_with(m_url, "https://plex.tv"))
+  if (boost::starts_with(m_url, "https://plex.tv") && !boost::starts_with(m_url, "https://plex.tv:443/sync"))
     g_curlInterface.easy_setopt(h, CURLOPT_CAINFO, CSpecialProtocol::TranslatePath("special://xbmc/system/plexca.pem").c_str());
   /* END PLEX */
 
@@ -858,10 +858,10 @@ bool CCurlFile::Service(const CStdString& strURL, CStdString& strHTML)
     }
   }
   /* PLEX */
-  else if (m_httpresponse == 500 && !m_state->m_httpheader.GetValue("X-Plex-Protocol").IsEmpty())
+  else if (boost::starts_with(strURL, "plexserver://"))
   {
-    /* Additional debug data? */
-    CLog::Log(LOGDEBUG, "CURL: Failed with 500 on a Plex Server, reading data");
+    // read the failure as well, since it can contain important information.
+    CLog::Log(LOGDEBUG, "CCurlFile::Service reading extra failure information");
     ReadData(strHTML);
   }
   /* END PLEX */

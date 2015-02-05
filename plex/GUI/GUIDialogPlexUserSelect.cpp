@@ -23,6 +23,8 @@ bool CGUIDialogPlexUserSelect::OnMessage(CGUIMessage &message)
   {
     m_authed = false;
     m_userSwitched = false;
+    m_selectedUser = "";
+    m_selectedUserThumb = "";
 
     SetHeading("Switch to User");
     
@@ -45,7 +47,23 @@ bool CGUIDialogPlexUserSelect::OnMessage(CGUIMessage &message)
     }
     
     if (g_plexApplication.myPlexManager->IsSignedIn())
-      fetchUsers();
+    {
+      if (!fetchUsers())
+        return false;
+    }
+  }
+
+  if (message.GetMessage() == GUI_MSG_MYPLEX_STATE_CHANGE)
+  {
+    // users might have changed, let's refetch them.
+    if (g_plexApplication.myPlexManager->IsSignedIn())
+    {
+      if (!fetchUsers())
+      {
+        Close();
+        return true;
+      }
+    }
   }
 
   return CGUIDialogSelect::OnMessage(message);
@@ -64,7 +82,7 @@ bool CGUIDialogPlexUserSelect::OnAction(const CAction &action)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-void CGUIDialogPlexUserSelect::fetchUsers()
+bool CGUIDialogPlexUserSelect::fetchUsers()
 {
   XFILE::CPlexDirectory dir;
   CFileItemList users;
@@ -87,6 +105,18 @@ void CGUIDialogPlexUserSelect::fetchUsers()
     Add(users);
     SetSelected(currentUsername);
   }
+  else if (dir.IsTokenInvalid())
+  {
+    CLog::Log(LOGDEBUG, "CGUIDialogPlexUserSelect::fetchUser got a invalid token!");
+    // not much more we can do at this point. We failed
+    // to get our user list because we had a invalid token
+    // so we just navigate "home"
+    //
+    m_authed = true;
+    return false;
+  }
+
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,9 +131,11 @@ void CGUIDialogPlexUserSelect::OnSelected()
     isAdmin = GetSelectedItem()->GetProperty("admin").asBoolean();
   
   CFileItemPtr item = m_vecList->Get(m_viewControl.GetSelectedItem());
-  if (item && (item->GetProperty("protected").asBoolean() && !isAdmin))
+  if (item && item->GetProperty("protected").asBoolean())
   {
     bool firstTry = true;
+    m_selectedUser = item->GetProperty("title").asString();
+    m_selectedUserThumb = item->GetArt("thumb");
     while (true)
     {
       CStdString pin;
@@ -150,5 +182,9 @@ void CGUIDialogPlexUserSelect::OnSelected()
   }
 
   if (close)
+  {
+    m_selectedUser = "";
+    m_selectedUserThumb = "";
     Close();
+  }
 }

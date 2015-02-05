@@ -23,6 +23,8 @@
 #include "PlexPlayQueueManager.h"
 
 #include "dialogs/GUIDialogKaiToast.h"
+#include "dialogs/GUIDialogOK.h"
+#include "ApplicationMessenger.h"
 
 #include "PlexApplication.h"
 #include "GUIUserMessages.h"
@@ -39,7 +41,7 @@
 #define SUCCESS_TMOUT 30 * 60
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-CMyPlexManager::CMyPlexManager() : CThread("MyPlexManager"), m_state(STATE_REFRESH), m_homeId(-1), m_havePlexServers(false)
+CMyPlexManager::CMyPlexManager() : CThread("MyPlexManager"), m_state(STATE_REFRESH), m_homeId(-1)
 {
   g_guiSettings.SetString("myplex.status", g_localizeStrings.Get(44010));
   
@@ -115,11 +117,59 @@ void CMyPlexManager::Process()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+std::string CMyPlexManager::stateToString(CMyPlexManager::EMyPlexState state)
+{
+  switch (state)
+  {
+    case STATE_LOGGEDIN:
+      return "logged in";
+    case STATE_EXIT:
+      return "exit";
+    case STATE_FETCH_PIN:
+      return "fetching PIN";
+    case STATE_NOT_LOGGEDIN:
+      return "not logged in";
+    case STATE_REFRESH:
+      return "refresh";
+    case STATE_TRY_LOGIN:
+      return "try login";
+    case STATE_WAIT_PIN:
+      return "wait for PIN";
+    default:
+      return "unknown";
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+std::string CMyPlexManager::errorToString(CMyPlexManager::EMyPlexError error)
+{
+  switch (error)
+  {
+    case ERROR_INVALID_AUTH_TOKEN:
+      return "invalid token";
+    case ERROR_NETWORK:
+      return "network";
+    case ERROR_NOERROR:
+      return "no error";
+    case ERROR_PARSE:
+      return "parse error";
+    case ERROR_TMEOUT:
+      return "timeout";
+    case ERROR_WRONG_CREDS:
+      return "wrong credentials";
+    default:
+      return "no error";
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 void CMyPlexManager::BroadcastState()
 {
   CGUIMessage msg(GUI_MSG_MYPLEX_STATE_CHANGE, PLEX_MYPLEX_MANAGER, 0);
   msg.SetParam1((int)m_state);
   msg.SetParam2((int)m_lastError);
+
+  CLog::Log(LOGDEBUG, "CMyPlexManager::BroadcastState state: %s, error: %s", stateToString(m_state).c_str(), errorToString(m_lastError).c_str());
 
   switch(m_state)
   {
@@ -132,10 +182,28 @@ void CMyPlexManager::BroadcastState()
       break;
     }
     case STATE_NOT_LOGGEDIN:
+    {
       g_guiSettings.SetString("myplex.status", g_localizeStrings.Get(44010));
+
       if (m_lastError == ERROR_WRONG_CREDS && g_windowManager.GetActiveWindow() != WINDOW_SETTINGS_SYSTEM && m_homeId != -1)
-        CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(20117), "Please try again", 3000, false);
+        CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(20117), g_localizeStrings.Get(52630), 3000, false);
+
+      if (m_lastError == ERROR_INVALID_AUTH_TOKEN)
+      {
+        // nuke cache of user info as well
+        DoRemoveAllServers();
+        g_guiSettings.SetString("myplex.uid", "");
+        m_currentUserInfo = CMyPlexUserInfo();
+        CGUIDialogOK* dlg = (CGUIDialogOK*)g_windowManager.GetWindow(WINDOW_DIALOG_OK);
+        if (dlg)
+        {
+          dlg->SetHeading(g_localizeStrings.Get(52631));
+          dlg->SetLine(0, g_localizeStrings.Get(52632));
+          CApplicationMessenger::Get().DoModal((CGUIDialog*)dlg, WINDOW_DIALOG_OK);
+        }
+      }
       break;
+    }
     case STATE_REFRESH:
       g_guiSettings.SetString("myplex.status", "Trying...");
     default:
@@ -147,8 +215,8 @@ void CMyPlexManager::BroadcastState()
   if (m_state == STATE_LOGGEDIN || m_state == STATE_NOT_LOGGEDIN)
   {
     /* Update settings */
-    CGUIMessage msg(GUI_MSG_UPDATE, WINDOW_SETTINGS_SYSTEM, 0);
-    g_windowManager.SendThreadMessage(msg, WINDOW_SETTINGS_SYSTEM);
+    CGUIMessage umsg(GUI_MSG_UPDATE, WINDOW_SETTINGS_SYSTEM, 0);
+    g_windowManager.SendThreadMessage(umsg, WINDOW_SETTINGS_SYSTEM);
   }
 
   g_windowManager.SendThreadMessage(msg);
@@ -173,7 +241,12 @@ TiXmlElement* CMyPlexManager::GetXml(const CURL &url, bool POST)
     CLog::Log(LOGERROR, "CMyPlexManager::GetXml failed to fetch %s : %ld", url.Get().c_str(), file.GetLastHTTPResponseCode());
 
     // we need to check for 401 or 422, both can mean that the token is wrong
-    if (file.GetLastHTTPResponseCode() == 401 || file.GetLastHTTPResponseCode() == 422)
+    if (file.IsTokenInvalid())
+    {
+      m_lastError = ERROR_INVALID_AUTH_TOKEN;
+      m_state = STATE_NOT_LOGGEDIN;
+    }
+    else if (file.GetLastHTTPResponseCode() == 401)
     {
       m_lastError = ERROR_WRONG_CREDS;
       m_state = STATE_NOT_LOGGEDIN;
@@ -309,23 +382,18 @@ int CMyPlexManager::DoScanMyPlex()
   if (g_guiSettings.GetBool("myplex.enablequeueandrec"))
     g_plexApplication.dataLoader->LoadDataFromServer(m_myplex);
 
-  EMyPlexError err = CMyPlexScanner::DoScan();
-  m_lastError = err;
+  m_lastError = CMyPlexScanner::DoScan();
 
-  if (err == ERROR_WRONG_CREDS)
+  if (m_lastError != ERROR_NOERROR)
   {
-    m_state = STATE_NOT_LOGGEDIN;
+    if (m_lastError == ERROR_INVALID_AUTH_TOKEN || m_lastError == ERROR_WRONG_CREDS)
+      m_state = STATE_NOT_LOGGEDIN;
+    else if (m_lastError == ERROR_NETWORK)
+      m_state = STATE_REFRESH;
+
     BroadcastState();
     return FAILURE_TMOUT;
   }
-  else if (err == ERROR_NETWORK)
-  {
-    m_state = STATE_REFRESH;
-    BroadcastState();
-    return FAILURE_TMOUT;
-  }
-
-  m_havePlexServers = true;
 
   return SUCCESS_TMOUT;
 }
@@ -420,21 +488,16 @@ int CMyPlexManager::DoRemoveAllServers()
   // remove ALL servers, since we want to make sure that no
   // local connections with tokens are still around
   //
-  if (m_havePlexServers)
-  {
-    g_plexApplication.serverManager->RemoveAllServers();
+  g_plexApplication.serverManager->RemoveAllServers();
 
-    // Clear out queue and recommendations
-    g_plexApplication.dataLoader->RemoveServer(m_myplex);
+  // Clear out queue and recommendations
+  g_plexApplication.dataLoader->RemoveServer(m_myplex);
 
-    // clear out playqueues
-    g_plexApplication.playQueueManager->clear();
+  // clear out playqueues
+  g_plexApplication.playQueueManager->clear();
 
-    if (g_application.IsPlayingFullScreenVideo())
-      CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, "Lost connection to myPlex", "You need to relogin", 5000, false);
-
-    m_havePlexServers = false;
-  }
+  if (g_application.IsPlayingFullScreenVideo())
+    CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, "Lost connection to myPlex", "You need to relogin", 5000, false);
 
   return FAILURE_TMOUT;
 }
