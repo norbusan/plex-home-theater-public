@@ -1,3 +1,10 @@
+plexhometheater (1.3.7.82-1) unstable; urgency=medium
+
+  * new release, built from bzr sources
+  * disable ffmpeg patch, included upstream
+
+ -- Norbert Preining <preining@debian.org>  Mon, 20 Apr 2015 12:14:53 +0900
+
 plexhometheater (1.3.6.441-0.1) unstable; urgency=medium
 
   * new releases
