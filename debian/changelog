@@ -1,3 +1,9 @@
+plexhometheater (1.4.0.83-1~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+
+ -- Norbert Preining <preining@debian.org>  Sun, 03 May 2015 21:44:19 +0900
+
 plexhometheater (1.4.0.83-1) unstable; urgency=medium
 
   * new release
