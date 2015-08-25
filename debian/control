@@ -59,7 +59,7 @@ Build-Depends: cmake (>= 2.8.8), debhelper (>= 9),
  libboost-system-dev,
  libomxil-bellagio-dev [armel],
  libplist-dev,
- libcec-dev (>= 2.1),
+ libcec-dev (>= 3),
  libudev-dev,
  libshairport-dev,
  libtiff5-dev | libtiff4-dev | libtiff-dev,
@@ -78,6 +78,6 @@ Build-Depends: cmake (>= 2.8.8), debhelper (>= 9),
  
 Package: plexhometheater
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, libshairport1 | libshairport2, libcec (>= 2.1) | libcec2, libplist1 | libplist2
+Depends: ${misc:Depends}, ${shlibs:Depends}, libshairport2, libcec3, libplist3
 Description: The most awesome Media Center you'll ever need.
   Find more info at http://plexapp.com/
