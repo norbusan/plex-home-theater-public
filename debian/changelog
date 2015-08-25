@@ -1,8 +1,10 @@
 plexhometheater (1.4.1-2) unstable; urgency=medium
 
   * update libcec patch from sobkas to deal with both libs
+  * fix compilation on libcec3
+  * adapt dependencies for current Debian/sid
 
- -- Norbert Preining <preining@debian.org>  Mon, 24 Aug 2015 23:14:50 +0900
+ -- Norbert Preining <preining@debian.org>  Tue, 25 Aug 2015 09:58:53 +0900
 
 plexhometheater (1.4.1-1) unstable; urgency=medium
 
