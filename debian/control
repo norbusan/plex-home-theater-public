@@ -78,6 +78,6 @@ Build-Depends: cmake (>= 2.8.8), debhelper (>= 9),
  
 Package: plexhometheater
 Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, libshairport2, libcec3, libplist3
+Depends: ${misc:Depends}, ${shlibs:Depends}, libshairport2, libcec3 | libcec3.0, libplist3
 Description: The most awesome Media Center you'll ever need.
   Find more info at http://plexapp.com/

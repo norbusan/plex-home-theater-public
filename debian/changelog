@@ -1,3 +1,9 @@
+plexhometheater (1.4.1-3) unstable; urgency=medium
+
+  * add alternative dependency on libcec3.0 for DebMultimedia
+
+ -- Norbert Preining <preining@debian.org>  Thu, 27 Aug 2015 15:38:17 +0900
+
 plexhometheater (1.4.1-2) unstable; urgency=medium
 
   * update libcec patch from sobkas to deal with both libs
